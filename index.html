@@ -65,21 +65,38 @@
     <div id="container">
         <h1>Browser Info</h1>
         <textarea id="result-textarea" readonly></textarea>
+        <button id="show-result-btn">Show Result</button>
         <button id="copy-btn">Copy to Clipboard</button>
     </div>
     <script>
-        // Initialize the agent at application startup.
-        // You can also use https://openfpcdn.io/fingerprintjs/v3/esm.min.js
-        const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
-            .then(FingerprintJS => FingerprintJS.load());
-        
-        fpPromise
-            .then(fp => fp.get())
-            .then(result => {
-                const resultTextArea = document.getElementById('result-textarea');
-                resultTextArea.value = JSON.stringify(result.components, null, 2);
-            });
-        
+        // Function to check if the user is on a mobile device
+        const isMobileDevice = () => {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        };
+
+        // Function to display the result in the textarea
+        const displayResult = () => {
+            if (isMobileDevice()) {
+                alert("This feature is not available on mobile devices.");
+                return;
+            }
+
+            // Perform the result display logic here
+            const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
+                .then(FingerprintJS => FingerprintJS.load());
+
+            fpPromise
+                .then(fp => fp.get())
+                .then(result => {
+                    const resultTextArea = document.getElementById('result-textarea');
+                    resultTextArea.value = JSON.stringify(result.components, null, 2);
+                });
+        };
+
+        // Add event listener to show result button
+        const showResultBtn = document.getElementById('show-result-btn');
+        showResultBtn.addEventListener('click', displayResult);
+
         // Add event listener to copy button
         const copyBtn = document.getElementById('copy-btn');
         copyBtn.addEventListener('click', () => {
