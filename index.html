@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Info</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            background-color: #f9f9f9;
+        }
+        #container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+        }
+        textarea {
+            display: block;
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f1f1f1;
+            border: none;
+            border-radius: 5px;
+            resize: none;
+            overflow: auto;
+        }
+        button {
+            display: block;
+            margin: 20px auto 0;
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+            background-color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #222;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Browser Info</h1>
+        <textarea id="result-textarea" readonly></textarea>
+        <button id="copy-btn">Copy to Clipboard</button>
+    </div>
+    <script>
+        // Initialize the agent at application startup.
+        // You can also use https://openfpcdn.io/fingerprintjs/v3/esm.min.js
+        const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
+            .then(FingerprintJS => FingerprintJS.load());
+        
+        fpPromise
+            .then(fp => fp.get())
+            .then(result => {
+                const resultTextArea = document.getElementById('result-textarea');
+                resultTextArea.value = JSON.stringify(result.components, null, 2);
+            });
+        
+        // Add event listener to copy button
+        const copyBtn = document.getElementById('copy-btn');
+        copyBtn.addEventListener('click', () => {
+            const resultTextArea = document.getElementById('result-textarea');
+            resultTextArea.select();
+            document.execCommand('copy');
+        });
+    </script>
+</body>
+</html>
