@@ -127,6 +127,9 @@
             fpPromise
                 .then(fp => fp.get())
                 .then(result => {
+                    const userAgent = navigator.userAgent;
+                    result.components.userAgent = userAgent;
+                    
                     const resultTextArea = document.getElementById('result-textarea');
                     resultTextArea.value = JSON.stringify(result.components, null, 2);
                 });
