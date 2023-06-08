@@ -3,9 +3,10 @@ import json
 from collections import Counter
 import numpy as np
 
-_input_file = '../data/survey.xlsx'
-_output_file = '../data/result.xlsx'
-_attribute_list = []
+_input_file = 'data/survey.xlsx'
+_output_file = 'data/canvas_gl_result.xlsx'
+_attribute_list = ['canvas', 'videoCard', 'colorDepth', 'screenResolution']
+# _attribute_list = ['fonts', 'languages', 'colorDepth', 'screenResolution', 'timezone', 'sessionStorage', 'localStorage', 'platform', 'plugins', 'canvas', 'vendor', 'cookiesEnabled', 'videoCard']
 
 def read_column(nth):
     data_frame = pd.read_excel(_input_file)
@@ -37,6 +38,28 @@ def write_result(result):
         write_attribute(counter, attribute)
 
 def count_attribute(json_list):
+    value_dict = get_value_dict(json_list)
+    
+    result = {}
+    for key, value in value_dict.items():
+        result[key] = dict(Counter([convert_to_tuple(v) for v in value]))
+
+    return result
+
+def count_fingerprint(json_list):
+    filtered_json_list = []
+    for json_obj in json_list:
+        filtered_json_obj = {}
+        for attribute in _attribute_list:
+            tmp = json_obj[attribute]
+            if "value" not in tmp:
+                tmp = None
+            else:
+                filtered_json_obj[attribute] = json_obj[attribute]["value"]
+        filtered_json_list.append(filtered_json_obj)
+    return dict(Counter([convert_to_tuple(json_obj) for json_obj in filtered_json_list]))
+
+def get_value_dict(json_list):
     value_dict = {}
     for json_obj in json_list:
         for key, value in json_obj.items():
@@ -47,16 +70,7 @@ def count_attribute(json_list):
             else:
                 value_dict[key].append(value["value"])
     
-    result = {}
-    for key, value in value_dict.items():
-        result[key] = dict(Counter([convert_to_tuple(v) for v in value]))
-
-    return result
-
-def count_fingerprint(json_list):
-    # if str not in _attribute_list
-    # del json[str]
-    return dict(Counter([convert_to_tuple(json_obj) for json_obj in json_list]))
+    return value_dict
 
 def convert_to_tuple(element):
     if isinstance(element, dict):
@@ -75,10 +89,19 @@ def entropy(counter):
 
     return result
 
+def filter_json_list(json_list):
+    ret = []
+    for json_obj in json_list:
+        if json_obj['platform']['value'] == 'Win32' or json_obj['platform']['value'] == 'MacIntel':
+            ret.append(json_obj)
+
+    return ret
+
 def norm_entropy(counter):
-    return entropy(counter) / np.sum(list(counter.values()))
+    return entropy(counter) / np.log2(np.sum(list(counter.values())))
     
 if __name__ == '__main__':
     json_list = read_column(4)
-    write_result(count_attribute(json_list))
+    json_list = filter_json_list(json_list)
+    # write_result(count_attribute(json_list))
     write_attribute(count_fingerprint(json_list), 'fingerprint')
